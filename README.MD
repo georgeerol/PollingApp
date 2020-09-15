@@ -10,3 +10,16 @@ There's tree tables:
             because of the nature of the voting system where each option can belong to more than one topic at the same time.
             For example "*we can comparing Dele Alli to Messi at the same time as our first poll*". f we don’t do this we’ll end
             up creating several Dele Alli’s in our tables for the other topics where his name is used which would defeat the DRY principle.
+            
+            
+# Installing Wget via Homebrew
+Install Homebrew
+```sh
+# /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+
+```
+
+Install wget
+```shell script
+# brew install wget
+```

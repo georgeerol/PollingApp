@@ -22,6 +22,7 @@ class Topics(Base):
 class Options(Base):
     name = db.Column(db.String(200))
 
+
 # Polls model to connect topics and options together
 class Polls(Base):
     # Columns declaration
