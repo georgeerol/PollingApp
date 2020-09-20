@@ -1,3 +1,4 @@
+import uuid
 from db import db
 
 
@@ -13,14 +14,36 @@ class Base(db.Model):
 # Model for poll topics
 class Topics(Base):
     title = db.Column(db.String(500))
+    status = db.Column(db.Boolean, default=1)
 
+    # To mark poll as open or closed should be under title not polls
+    # User friendly way to display the object
     def __repr__(self):
         return self.title
+
+    # return dictionary that can easily be jsonified
+    def to_json(self):
+        return {
+            'title': self.title,
+            'options': [{'name': option.option.name, 'vote_count': option.vote_count}
+                        for option in self.options.all()],
+            'status': self.status
+
+        }
 
 
 # Model for poll options
 class Options(Base):
-    name = db.Column(db.String(200))
+    name = db.Column(db.String(200), unique=True)
+
+    def __repr__(self):
+        return self.name
+
+    def to_json(self):
+        return {
+            'id': uuid.uuid4(),  # Generates a random uuid
+            'name': self.name
+        }
 
 
 # Polls model to connect topics and options together
@@ -43,7 +66,7 @@ class Polls(Base):
         return self.option.name
 
 
-# Model to store user details 
+# Model to store user details
 class Users(Base):
     email = db.Column(db.String(100), unique=True)
     username = db.Column(db.String(50), unique=True)
