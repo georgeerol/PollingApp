@@ -1,3 +1,4 @@
+import uuid
 from db import db
 
 
@@ -34,6 +35,15 @@ class Topics(Base):
 # Model for poll options
 class Options(Base):
     name = db.Column(db.String(200), unique=True)
+
+    def __repr__(self):
+        return self.name
+
+    def to_json(self):
+        return {
+            'id': uuid.uuid4(),  # Generates a random uuid
+            'name': self.name
+        }
 
 
 # Polls model to connect topics and options together

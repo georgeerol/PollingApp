@@ -106,6 +106,32 @@ def api_polls():
         return jsonify(all_polls)
 
 
+@app.route('/api/polls/options')
+def api_polls_options():
+    all_options = [option.to_json() for option in Options.query.all()]
+    return jsonify(all_options)
+
+
+@app.route('/api/poll/vote', methods=["PATCH"])
+def api_poll_vote():
+    poll = request.get_json()
+
+    poll_title, option = (poll['poll_title'], poll['option'])
+
+    join_tables = Polls.query.join(Topics).join(Options)
+    # filter options
+    option = join_tables.filter(Topics.title.like(poll_title)).filter(Options.name.like(option)).first()
+
+    # increment vote_count by 1 if the option was found
+    if option:
+        option.vote_count += 1
+        db.session.rollback()
+        db.session.commit()
+
+        return jsonify({'message': 'Thank you for voting'})
+
+    return jsonify({'message': 'option or poll was not found please try again'})
+
 
 if __name__ == '__main__':
     app.run()
