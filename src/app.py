@@ -1,8 +1,9 @@
 from flask import (
-    Flask, render_template, request, flash, redirect, url_for, session
+    Flask, render_template, request, flash, redirect, url_for, session, jsonify
 )
+from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import Users
+from models import Users, Topics, Polls, Options
 from db import db
 
 app = Flask(__name__)
@@ -11,6 +12,8 @@ app.config.from_object('config')
 
 db.init_app(app)
 db.create_all(app=app)
+
+migrate = Migrate(app, db, render_as_batch=True)
 
 
 @app.route('/')
@@ -65,6 +68,43 @@ def logout():
         session.pop('user')
         flash("we hope to see you again!")
     return redirect(url_for('home'))
+
+
+@app.route('/api/polls', methods=['GET', 'POST'])
+# Retrieves/adds polls from/to the database
+def api_polls():
+    if request.method == 'POST':
+        # get the poll and save it in the database
+        poll = request.get_json()
+
+        # simple validation to check if all values are properly secret
+        for key, value in poll.items():
+            if not value:
+                return jsonify({'error': 'value for {} is empty'.format(key)})
+        title = poll['title']
+        options_query = lambda option: Options.query.filter(Options.name.like(option))
+
+        """The list comprehension reads as follows Make a Poll object out of an option if that option doesn’t exist 
+        in the database (count == 0), if exists in the database (else) then get that option and make a Poll object 
+        from it. """
+        options = [Polls(option=Options(name=option))
+                   if options_query(option).count() == 0
+                   else Polls(option=options_query(option).first()) for option in poll['options']
+                   ]
+
+        new_topic = Topics(title=title, options=options)
+
+        db.session.add(new_topic)
+        db.session.commit()
+
+        return jsonify({'message': 'Poll was created succesfully'})
+
+    else:
+        # it's a GET request, return dict representations of the API
+        polls = Topics.query.join(Polls).all()
+        all_polls = {'Polls': [poll.to_json() for poll in polls]}
+        return jsonify(all_polls)
+
 
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@
 
 # Schema
 ![schema](./misc/schema.png)
+
 There's tree tables:
 * `topic`    contains all the various topics we're going to be voting on.
             For example "*Is Alex Iwobi better than Dele Alli*".
