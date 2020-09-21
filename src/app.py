@@ -125,12 +125,23 @@ def api_poll_vote():
     # increment vote_count by 1 if the option was found
     if option:
         option.vote_count += 1
-        db.session.rollback()
         db.session.commit()
+        db.session.close()
 
         return jsonify({'message': 'Thank you for voting'})
 
     return jsonify({'message': 'option or poll was not found please try again'})
+
+
+@app.route('/polls/<poll_name>')
+def poll(poll_name):
+    return render_template('index.html')
+
+
+@app.route('/api/poll/<poll_name>')
+def api_poll(poll_name):
+    poll = Topics.query.filter(Topics.title.like(poll_name)).first()
+    return jsonify({'Polls': [poll.to_json()]}) if poll else jsonify({'message': 'poll not found'})
 
 
 if __name__ == '__main__':
