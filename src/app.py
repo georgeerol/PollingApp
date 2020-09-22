@@ -2,8 +2,11 @@ from flask import (
     Flask, render_template, request, flash, redirect, url_for, session, jsonify
 )
 from flask_migrate import Migrate
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import Users, Topics, Polls, Options
+from admin import AdminView
 from db import db
 
 app = Flask(__name__)
@@ -14,6 +17,16 @@ db.init_app(app)
 db.create_all(app=app)
 
 migrate = Migrate(app, db, render_as_batch=True)
+
+
+# admin = Admin(app, name='Dashboard')
+# admin.add_view(ModelView(Users, db.session))
+
+admin = Admin(app, name='Dashboard')
+admin.add_view(AdminView(Users, db.session))
+admin.add_view(AdminView(Polls, db.session))
+admin.add_view(AdminView(Options, db.session))
+admin.add_view(AdminView(Topics, db.session))
 
 
 @app.route('/')
