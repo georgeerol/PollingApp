@@ -18,7 +18,6 @@ db.create_all(app=app)
 
 migrate = Migrate(app, db, render_as_batch=True)
 
-
 # admin = Admin(app, name='Dashboard')
 # admin.add_view(ModelView(Users, db.session))
 
@@ -114,8 +113,9 @@ def api_polls():
 
     else:
         # it's a GET request, return dict representations of the API
-        polls = Topics.query.join(Polls).all()
+        polls = Topics.query.filter_by(status=True).join(Polls).order_by(Topics.id.desc()).all()
         all_polls = {'Polls': [poll.to_json() for poll in polls]}
+
         return jsonify(all_polls)
 
 
@@ -146,6 +146,11 @@ def api_poll_vote():
     return jsonify({'message': 'option or poll was not found please try again'})
 
 
+@app.route('/polls', methods=['GET'])
+def polls():
+    return render_template('polls.html')
+
+
 @app.route('/polls/<poll_name>')
 def poll(poll_name):
     return render_template('index.html')
@@ -154,6 +159,7 @@ def poll(poll_name):
 @app.route('/api/poll/<poll_name>')
 def api_poll(poll_name):
     poll = Topics.query.filter(Topics.title.like(poll_name)).first()
+
     return jsonify({'Polls': [poll.to_json()]}) if poll else jsonify({'message': 'poll not found'})
 
 
