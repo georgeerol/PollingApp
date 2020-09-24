@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import Users, Topics, Polls, Options
+from models import Users, Topics, Polls, Options, UserPolls
 from admin import AdminView
 from db import db
 
@@ -109,7 +109,7 @@ def api_polls():
         db.session.add(new_topic)
         db.session.commit()
 
-        return jsonify({'message': 'Poll was created succesfully'})
+        return jsonify({'message': 'Poll was created successfully'})
 
     else:
         # it's a GET request, return dict representations of the API
@@ -132,15 +132,29 @@ def api_poll_vote():
     poll_title, option = (poll['poll_title'], poll['option'])
 
     join_tables = Polls.query.join(Topics).join(Options)
+
+    # Get topic and username from the database
+    topic = Topics.query.filter_by(title=poll_title).first()
+    user = Users.query.filter_by(username=session['user']).first()
+
     # filter options
     option = join_tables.filter(Topics.title.like(poll_title)).filter(Options.name.like(option)).first()
 
-    # increment vote_count by 1 if the option was found
+    # check if the user has voted on this poll
+    poll_count = UserPolls.query.filter_by(topic_id=topic.id).filter_by(user_id=user.id).count()
+
+    if poll_count > 0:
+        return jsonify({'message': 'Sorry! multiple votes are not allowed'})
+
     if option:
+
+        # record user and poll
+        user_poll = UserPolls(topic_id=topic.id, user_id=user.id)
+        db.session.add(user_poll)
+
+        # increment vote_count by 1 if the option was found
         option.vote_count += 1
         db.session.commit()
-        db.session.close()
-
         return jsonify({'message': 'Thank you for voting'})
 
     return jsonify({'message': 'option or poll was not found please try again'})
