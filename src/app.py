@@ -6,7 +6,7 @@ from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import Users, Topics, Polls, Options, UserPolls
-from admin import AdminView
+from admin import AdminView, TopicView
 from db import db
 
 app = Flask(__name__)
@@ -25,7 +25,7 @@ admin = Admin(app, name='Dashboard')
 admin.add_view(AdminView(Users, db.session))
 admin.add_view(AdminView(Polls, db.session))
 admin.add_view(AdminView(Options, db.session))
-admin.add_view(AdminView(Topics, db.session))
+admin.add_view(TopicView(Topics, db.session))
 
 
 @app.route('/')
