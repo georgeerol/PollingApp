@@ -36,10 +36,11 @@ class TopicView(AdminView):
         super(TopicView, self).__init__(*args, **kwargs)
 
     # List the various columns in the order you want them
-    column_list = ('title', 'date_created', 'date_modified', 'status')
+    column_list = ('title', 'date_created', 'date_modified', 'total_vote_count', 'status')
     # Columns that you want to be searchable in the model
     column_searchable_list = ('title',)
     # The column that the view should be sorted with by default
     column_default_sort = ('date_created', True)
     # List of columns that can be used to filter
     column_filters = ('status',)
+    column_sortable_list = ('total_vote_count',)
