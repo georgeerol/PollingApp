@@ -2,8 +2,11 @@ from flask import (
     Flask, render_template, request, flash, redirect, url_for, session, jsonify
 )
 from flask_migrate import Migrate
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import Users, Topics, Polls, Options
+from models import Users, Topics, Polls, Options, UserPolls
+from admin import AdminView, TopicView
 from db import db
 
 app = Flask(__name__)
@@ -14,6 +17,15 @@ db.init_app(app)
 db.create_all(app=app)
 
 migrate = Migrate(app, db, render_as_batch=True)
+
+# admin = Admin(app, name='Dashboard')
+# admin.add_view(ModelView(Users, db.session))
+
+admin = Admin(app, name='Dashboard')
+admin.add_view(AdminView(Users, db.session))
+admin.add_view(AdminView(Polls, db.session))
+admin.add_view(AdminView(Options, db.session))
+admin.add_view(TopicView(Topics, db.session))
 
 
 @app.route('/')
@@ -97,12 +109,13 @@ def api_polls():
         db.session.add(new_topic)
         db.session.commit()
 
-        return jsonify({'message': 'Poll was created succesfully'})
+        return jsonify({'message': 'Poll was created successfully'})
 
     else:
         # it's a GET request, return dict representations of the API
-        polls = Topics.query.join(Polls).all()
+        polls = Topics.query.filter_by(status=True).join(Polls).order_by(Topics.id.desc()).all()
         all_polls = {'Polls': [poll.to_json() for poll in polls]}
+
         return jsonify(all_polls)
 
 
@@ -119,18 +132,49 @@ def api_poll_vote():
     poll_title, option = (poll['poll_title'], poll['option'])
 
     join_tables = Polls.query.join(Topics).join(Options)
+
+    # Get topic and username from the database
+    topic = Topics.query.filter_by(title=poll_title).first()
+    user = Users.query.filter_by(username=session['user']).first()
+
     # filter options
     option = join_tables.filter(Topics.title.like(poll_title)).filter(Options.name.like(option)).first()
 
-    # increment vote_count by 1 if the option was found
-    if option:
-        option.vote_count += 1
-        db.session.rollback()
-        db.session.commit()
+    # check if the user has voted on this poll
+    poll_count = UserPolls.query.filter_by(topic_id=topic.id).filter_by(user_id=user.id).count()
 
+    if poll_count > 0:
+        return jsonify({'message': 'Sorry! multiple votes are not allowed'})
+
+    if option:
+
+        # record user and poll
+        user_poll = UserPolls(topic_id=topic.id, user_id=user.id)
+        db.session.add(user_poll)
+
+        # increment vote_count by 1 if the option was found
+        option.vote_count += 1
+        db.session.commit()
         return jsonify({'message': 'Thank you for voting'})
 
     return jsonify({'message': 'option or poll was not found please try again'})
+
+
+@app.route('/polls', methods=['GET'])
+def polls():
+    return render_template('polls.html')
+
+
+@app.route('/polls/<poll_name>')
+def poll(poll_name):
+    return render_template('index.html')
+
+
+@app.route('/api/poll/<poll_name>')
+def api_poll(poll_name):
+    poll = Topics.query.filter(Topics.title.like(poll_name)).first()
+
+    return jsonify({'Polls': [poll.to_json()]}) if poll else jsonify({'message': 'poll not found'})
 
 
 if __name__ == '__main__':

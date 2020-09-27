@@ -1,5 +1,7 @@
 import uuid
 from db import db
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import select, func
 
 
 # Base model that for other models to inherit from
@@ -15,6 +17,11 @@ class Base(db.Model):
 class Topics(Base):
     title = db.Column(db.String(500))
     status = db.Column(db.Boolean, default=1)
+    create_uid = db.Column(db.ForeignKey('users.id'))
+    close_date = db.Column(db.DateTime)
+    created_by = db.relationship('Users', foreign_keys=[create_uid],
+                                 backref=db.backref('user_polls',
+                                                    lazy='dynamic'))
 
     # To mark poll as open or closed should be under title not polls
     # User friendly way to display the object
@@ -25,11 +32,24 @@ class Topics(Base):
     def to_json(self):
         return {
             'title': self.title,
-            'options': [{'name': option.option.name, 'vote_count': option.vote_count}
+            'options': [{'name': option.option.name,
+                         'vote_count': option.vote_count}
                         for option in self.options.all()],
-            'status': self.status
-
+            'close_date': self.close_date,
+            'status': self.status,
+            'total_vote_count': self.total_vote_count
         }
+
+    @hybrid_property
+    def total_vote_count(self, total=0):
+        for option in self.options.all():
+            total += option.vote_count
+
+        return total
+
+    @total_vote_count.expression
+    def total_vote_count(cls):
+        return select([func.sum(Polls.vote_count)]).where(Polls.topic_id == cls.id)
 
 
 # Model for poll options
@@ -71,3 +91,14 @@ class Users(Base):
     email = db.Column(db.String(100), unique=True)
     username = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(200))
+
+
+class UserPolls(Base):
+    topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    topics = db.relationship('Topics', foreign_keys=[topic_id],
+                             backref=db.backref('voted_on_by', lazy='dynamic'))
+
+    users = db.relationship('Users', foreign_keys=[user_id],
+                            backref=db.backref('voted_on', lazy='dynamic'))
