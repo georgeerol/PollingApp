@@ -24,3 +24,9 @@ Install wget
 ```shell script
 # brew install wget
 ```
+
+Install and  start rabbitmq server
+```shell script
+# brew install rabbitmq
+# brew services start rabbitmq
+```

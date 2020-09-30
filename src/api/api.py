@@ -1,5 +1,6 @@
 from models import db, Users, Polls, Topics, Options, UserPolls
 from flask import Blueprint, request, jsonify, session
+from datetime import datetime
 
 api = Blueprint('api', 'api', url_prefix='/api')
 
@@ -30,6 +31,11 @@ def api_polls():
 
         db.session.add(new_topic)
         db.session.commit()
+
+        # run the task
+        from tasks import close_poll
+        eta = datetime.utcfromtimestamp(poll['close_date'])
+        close_poll.apply_async((new_topic.id,), eta=eta)
 
         return jsonify({'message': 'Poll was created successfully'})
 
@@ -65,8 +71,8 @@ def api_poll_vote():
     # check if the user has voted on this poll
     poll_count = UserPolls.query.filter_by(topic_id=topic.id).filter_by(user_id=user.id).count()
 
-    if poll_count > 0:
-        return jsonify({'message': 'Sorry! multiple votes are not allowed'})
+    # if poll_count > 0:
+    #     return jsonify({'message': 'Sorry! multiple votes are not allowed'})
 
     if option:
         # record user and poll
