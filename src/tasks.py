@@ -25,7 +25,7 @@ con, session = connect()
 
 @celery.task
 def close_poll(topic_id):
-    print("GEorge Erol")
     topic = session.query(Topics).get(topic_id)
     topic.status = False
     session.commit()
+    return 'poll closed succesfully'

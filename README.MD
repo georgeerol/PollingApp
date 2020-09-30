@@ -30,3 +30,8 @@ Install and  start rabbitmq server
 # brew install rabbitmq
 # brew services start rabbitmq
 ```
+
+Start Celery
+```shell script
+# celery -A tasks.celery worker --loglevel=info
+````
