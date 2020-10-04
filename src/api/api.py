@@ -1,5 +1,7 @@
 from models import db, Users, Polls, Topics, Options, UserPolls
 from flask import Blueprint, request, jsonify, session
+from datetime import datetime
+from config import SQLALCHEMY_DATABASE_URI
 
 api = Blueprint('api', 'api', url_prefix='/api')
 
@@ -26,10 +28,15 @@ def api_polls():
                    else Polls(option=options_query(option).first()) for option in poll['options']
                    ]
 
-        new_topic = Topics(title=title, options=options)
+        eta = datetime.utcfromtimestamp(poll['close_date'])
+        new_topic = Topics(title=title, options=options, close_date=eta)
 
         db.session.add(new_topic)
         db.session.commit()
+
+        # run the task
+        from tasks import close_poll
+        close_poll.apply_async((new_topic.id,), eta=eta)
 
         return jsonify({'message': 'Poll was created successfully'})
 
@@ -65,8 +72,8 @@ def api_poll_vote():
     # check if the user has voted on this poll
     poll_count = UserPolls.query.filter_by(topic_id=topic.id).filter_by(user_id=user.id).count()
 
-    if poll_count > 0:
-        return jsonify({'message': 'Sorry! multiple votes are not allowed'})
+    # if poll_count > 0:
+    #     return jsonify({'message': 'Sorry! multiple votes are not allowed'})
 
     if option:
         # record user and poll

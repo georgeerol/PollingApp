@@ -9,6 +9,29 @@ from models import Users, Topics, Polls, Options, UserPolls
 from admin import AdminView, TopicView
 from api.api import api
 from db import db
+import config
+from celery import Celery
+
+
+def make_celery(app):
+    celery = Celery(
+        app.import_name, backend=app.config['CELERY_RESULT_BACKEND'],
+        broker=app.config['CELERY_BROKER']
+    )
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+
+    return celery
+
 
 app = Flask(__name__)
 
@@ -20,6 +43,9 @@ db.init_app(app)
 db.create_all(app=app)
 
 migrate = Migrate(app, db, render_as_batch=True)
+
+# create celery object
+celery = make_celery(app)
 
 # admin = Admin(app, name='Dashboard')
 # admin.add_view(ModelView(Users, db.session))
