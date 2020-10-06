@@ -25,4 +25,10 @@ class AppTest(BaseTest):
         self.assertEqual('value for options is empty', result['message'])
 
     def test_new_poll(self):
-        pass
+        result = requests.post(self.hostname + '/api/polls', json=self.poll).json()
+        self.assertEqual('Poll was created successfully', result['message'])
+
+    def vote(self):
+        input_json = {'poll_title': self.poll['title'],
+                      'option': self.poll['options'][0]}
+        result = self.session.patch(self.hostname + '/api/poll/vote', input_json).json()
