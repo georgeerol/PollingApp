@@ -16,7 +16,7 @@ def api_polls():
         # simple validation to check if all values are properly secret
         for key, value in poll.items():
             if not value:
-                return jsonify({'error': 'value for {} is empty'.format(key)})
+                return jsonify({'message': 'value for {} is empty'.format(key)})
         title = poll['title']
         options_query = lambda option: Options.query.filter(Options.name.like(option))
 
