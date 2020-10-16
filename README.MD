@@ -103,7 +103,7 @@ guest.
 ## Rabbitmq Login 
 ![Rabbitmq Login](./misc/RabbitmqLoginPage.PNG)
 ## Rabbitmq Main page
-! [Rabbitmq Main Page](./misc/RabbitmqMainPage.PNG)
+![Rabbitmq Main Page](./misc/RabbitmqMainPage.PNG)
 
 
 
