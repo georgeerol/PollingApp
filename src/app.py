@@ -1,16 +1,15 @@
+from celery import Celery
 from flask import (
-    Flask, render_template, request, flash, redirect, url_for, session, jsonify
+    Flask, render_template, request, flash, redirect, url_for, session
 )
-from flask_migrate import Migrate
 from flask_admin import Admin
-from flask_admin.contrib.sqla import ModelView
+from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import Users, Topics, Polls, Options, UserPolls
+
 from admin import AdminView, TopicView
 from api.api import api
 from db import db
-import config
-from celery import Celery
+from models import Users, Topics, Polls, Options
 
 
 def make_celery(app):
