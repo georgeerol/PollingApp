@@ -19,7 +19,7 @@ class BaseTest(TestCase):
     def setUpClass(cls):
         app.config['DEBUG'] = False
         app.config['TESTING'] = True
-        cls.DB_PATH = os.path.join(os.path.dirname(__file__), 'votr_test.db')
+        cls.DB_PATH = os.path.join(os.path.dirname(__file__), 'data_test.db')
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{}'.format(cls.DB_PATH)
         celery.conf.update(CELERY_ALWAYS_EAGER=True)
         cls.hostname = 'http://localhost:7000'
