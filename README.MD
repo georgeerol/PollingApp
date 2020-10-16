@@ -21,7 +21,30 @@ It uses:
  * Interactive progress bars to show the percentage of votes
 
 # Login Page
-After running the app, from your Web Browser type this link: 
+After running the app, from your Web Browser type this link: http://127.0.0.1:5000/ and the welcome page will show the login page.
+Create an account and start creating polls
+![LoginPage](./misc/LoginPage.PNG)
+
+# Create a Poll
+From the main page click on Create a Poll, create a poll and check the latest polls
+## Main Page
+![MainPage](./misc/MainPage.PNG)
+## Create Poll Page
+Create a poll and set a timer for the duration of the poll and save the poll
+![Poll Page](./misc/CreateAPollPage.PNG)
+## Main Page with different Polls
+![Main Page with Polls](./misc/MainPageWithPolls.PNG)
+
+
+
+
+
+
+
+
+
+
+
 
 # Schema
 ![schema](./misc/schema.png)
@@ -83,5 +106,6 @@ From a new terminal `cd` to the `src` folder and run below command:
 ```shell script
 # celery -A tasks.celery worker --loglevel=info
 ```
+Note: Start the app before running celery
 
 
