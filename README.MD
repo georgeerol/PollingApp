@@ -35,17 +35,6 @@ Create a poll and set a timer for the duration of the poll and save the poll
 ## Main Page with different Polls
 ![Main Page with Polls](./misc/MainPageWithPolls.PNG)
 
-
-
-
-
-
-
-
-
-
-
-
 # Schema
 ![schema](./misc/schema.png)
 
@@ -107,5 +96,18 @@ From a new terminal `cd` to the `src` folder and run below command:
 # celery -A tasks.celery worker --loglevel=info
 ```
 Note: Start the app before running celery
+
+# Checking Rabbitmq
+When the Rabbitmq service is started you can check it at http://localhost:15672/ . The default username and password is
+guest.
+## Rabbitmq Login 
+![Rabbitmq Login](./misc/RabbitmqLoginPage.PNG)
+## Rabbitmq Main page
+! [Rabbitmq Main Page](./misc/RabbitmqMainPage.PNG)
+
+
+
+
+
 
 

@@ -28,4 +28,4 @@ def close_poll(topic_id):
     topic = session.query(Topics).get(topic_id)
     topic.status = False
     session.commit()
-    return 'poll closed succesfully'
+    return 'poll closed successfully'
